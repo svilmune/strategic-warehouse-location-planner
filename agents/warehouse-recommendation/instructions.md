@@ -270,9 +270,10 @@ Steps 4 to 6 use the researched set only.
 For each site in the researched set:
 1. Read its latitude and longitude from candidate_sites.csv by
    site_id, using Code Interpreter.
-2. Call azure-maps with:
+2. Call azure_maps_reverse_geocode with:
      api-version = 2025-01-01
      coordinates = <longitude>,<latitude>   (longitude first)
+     x-ms-client-id = ${AZURE_MAPS_CLIENT_ID}
 3. Read features[0].properties.address.adminDistricts[0].shortName
    (the state) and countryRegion.ISO (the country).
 4. Compare with the site's site_state and COUNTRY.

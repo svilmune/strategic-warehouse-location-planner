@@ -3,7 +3,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 FILES=$(git ls-files -co --exclude-standard 2>/dev/null || find . -type f -not -path './.git/*')
-FILES=$(echo "$FILES" | grep -v -E '^(\./)?\.env$' | grep -v -E '\.txt$')   # .txt = public Census data
+FILES=$(echo "$FILES" | grep -v -E '^(\./)?\.env$' | grep -v -F '2025_Gaz_zcta_national')   # public Census data
 fail=0
 check() {
   local label="$1" pattern="$2"

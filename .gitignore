@@ -4,3 +4,13 @@ kudu-state.json
 __pycache__/
 .venv/
 .DS_Store
+
+# Demo videos are hosted externally, not committed
+*.mp4
+*.mov
+*.m4v
+*.avi
+*.webm
+
+# Raw developer uploads (kept locally, not published)
+submission/_source/

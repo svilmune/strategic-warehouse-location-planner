@@ -1,76 +1,144 @@
--- MCP_VIEWS objects used by the warehouse agents.
--- Reconstructed from ALL_* dictionary views (the MCP user has no catalog role, so DBMS_METADATA is unavailable).
--- Storage clauses omitted. Grants for the MCP user are at the end of this file.
+-- =============================================================================
+-- Warehouse location agents - Oracle objects in schema MCP_VIEWS
+-- Run as the MCP_VIEWS owner, in this order (later objects depend on earlier).
+--   1. xxwla_geo_postal_cache   (table, agent-maintained)
+--   2. xxwla_candidate_site     (table, agent-maintained)
+--   3. xxwla_network_v          (view, reads the geocode cache)
+--   4. xxwla_demand_v           (view)
+--   5. xxwla_geo_pending_v      (view, reads demand, network and cache)
+--   6. Grants to the MCP database user
+-- =============================================================================
 
-CREATE TABLE MCP_VIEWS.XXWLA_CANDIDATE_SITE (
-  SITE_ID                         NUMBER NOT NULL
-, SITE_NAME                       VARCHAR2(200 BYTE) NOT NULL
-, REGION                          VARCHAR2(100 BYTE)
-, SITE_COUNTRY                    VARCHAR2(60 BYTE) NOT NULL
-, SITE_STATE                      VARCHAR2(60 BYTE)
-, SITE_CITY                       VARCHAR2(60 BYTE)
-, LATITUDE                        NUMBER NOT NULL
-, LONGITUDE                       NUMBER NOT NULL
-, IS_EXISTING_NODE                VARCHAR2(1 BYTE) DEFAULT 'N' NOT NULL
-, ACTIVE_FLAG                     VARCHAR2(1 BYTE) DEFAULT 'Y' NOT NULL
-, CATEGORY                        VARCHAR2(30 BYTE)
-, RATIONALE                       VARCHAR2(2000 BYTE)
-, INFRASTRUCTURE_NOTE             VARCHAR2(2000 BYTE)
-, SOURCE_URL                      VARCHAR2(1000 BYTE)
-, DISTANCE_FROM_COG_KM            NUMBER
-, CREATED_BY_AGENT                VARCHAR2(100 BYTE)
-, BUSINESS_REVIEWED               VARCHAR2(1 BYTE) DEFAULT 'N' NOT NULL
-, CREATION_DATE                   DATE DEFAULT SYSDATE NOT NULL
-, LAST_UPDATE_DATE                DATE DEFAULT SYSDATE NOT NULL
-, CONSTRAINT XXWLA_CAND_SITE_PK PRIMARY KEY (SITE_ID)
-, CONSTRAINT XXWLA_CAND_SITE_U1 UNIQUE (SITE_COUNTRY, SITE_NAME)
-, CONSTRAINT XXWLA_CAND_SITE_CK1 CHECK (active_flag      IN ('Y','N'))
-, CONSTRAINT XXWLA_CAND_SITE_CK2 CHECK (is_existing_node IN ('Y','N'))
-, CONSTRAINT XXWLA_CAND_SITE_CK3 CHECK (business_reviewed IN ('Y','N'))
-, CONSTRAINT XXWLA_CAND_SITE_CK4 CHECK (latitude  BETWEEN  -90 AND  90)
-, CONSTRAINT XXWLA_CAND_SITE_CK5 CHECK (longitude BETWEEN -180 AND 180)
-, CONSTRAINT XXWLA_CAND_SITE_CK6 CHECK (NOT (latitude = 0 AND longitude = 0))
-, CONSTRAINT XXWLA_CAND_SITE_CK7 CHECK (category IS NULL OR category IN
-                         ('EXISTING_NODE','ESTABLISHED_HUB','EMERGING_MARKET'))
-);
-
-CREATE INDEX MCP_VIEWS.XXWLA_CAND_SITE_N1 ON MCP_VIEWS.XXWLA_CANDIDATE_SITE (SITE_COUNTRY, REGION);
-
-CREATE TABLE MCP_VIEWS.XXWLA_GEO_POSTAL_CACHE (
-  GEO_COUNTRY                     VARCHAR2(60 BYTE) NOT NULL
-, GEO_POSTAL_CODE                 VARCHAR2(60 BYTE) NOT NULL
-, GEO_CITY                        VARCHAR2(60 BYTE)
-, GEO_STATE                       VARCHAR2(60 BYTE)
-, LATITUDE                        NUMBER
-, LONGITUDE                       NUMBER
-, RESOLUTION_LEVEL                VARCHAR2(12 BYTE) NOT NULL
-, RELIABILITY                     VARCHAR2(12 BYTE)
-, SOURCE_NAME                     VARCHAR2(200 BYTE)
-, CITATION_URL                    VARCHAR2(1000 BYTE)
-, AS_OF_DATE                      DATE
-, LAST_UPDATED_DATE               DATE DEFAULT SYSDATE NOT NULL
-, LAST_UPDATED_BY                 VARCHAR2(100 BYTE) DEFAULT 'GEO_AGENT' NOT NULL
-, CONSTRAINT XXWLA_GEO_CACHE_PK PRIMARY KEY (GEO_COUNTRY, GEO_POSTAL_CODE)
-, CONSTRAINT XXWLA_GEO_CACHE_CK1 CHECK (resolution_level IN
-                         ('POSTAL','CITY','STATE','UNRESOLVED'))
-, CONSTRAINT XXWLA_GEO_CACHE_CK2 CHECK (reliability IS NULL OR reliability IN
-                         ('HIGH','MEDIUM','LOW','UNVERIFIED'))
-, CONSTRAINT XXWLA_GEO_CACHE_CK3 CHECK (latitude  IS NULL OR
-                         latitude  BETWEEN  -90 AND  90)
-, CONSTRAINT XXWLA_GEO_CACHE_CK4 CHECK (longitude IS NULL OR
-                         longitude BETWEEN -180 AND 180)
-, CONSTRAINT XXWLA_GEO_CACHE_CK5 CHECK (NOT (latitude = 0 AND longitude = 0))
-, CONSTRAINT XXWLA_GEO_CACHE_CK6 CHECK (
-            resolution_level = 'UNRESOLVED'
-            OR (latitude IS NOT NULL AND longitude IS NOT NULL
-                AND reliability IS NOT NULL AND citation_url IS NOT NULL))
+--------------------------------------------------------------------------------
+-- xxwla_geo_postal_cache
+-- Postal code to coordinates. Written by the geocoding agent via MERGE.
+-- Reference data: a postal code has the same coordinates next year, which is
+-- why this is cached rather than looked up at query time.
+--------------------------------------------------------------------------------
+CREATE TABLE xxwla_geo_postal_cache (
+    geo_country          VARCHAR2(60)   NOT NULL,
+    geo_postal_code      VARCHAR2(60)   NOT NULL,
+    geo_city             VARCHAR2(60),
+    geo_state            VARCHAR2(60),
+    latitude             NUMBER,
+    longitude            NUMBER,
+    resolution_level     VARCHAR2(12)   NOT NULL,   -- POSTAL|CITY|STATE|UNRESOLVED
+    reliability          VARCHAR2(12),              -- HIGH|MEDIUM|LOW|UNVERIFIED
+    source_name          VARCHAR2(200),
+    citation_url         VARCHAR2(1000),
+    as_of_date           DATE,
+    last_updated_date    DATE           DEFAULT SYSDATE NOT NULL,
+    last_updated_by      VARCHAR2(100)  DEFAULT 'GEO_AGENT' NOT NULL,
+    CONSTRAINT xxwla_geo_cache_pk  PRIMARY KEY (geo_country, geo_postal_code),
+    CONSTRAINT xxwla_geo_cache_ck1 CHECK (resolution_level IN
+                     ('POSTAL','CITY','STATE','UNRESOLVED')),
+    CONSTRAINT xxwla_geo_cache_ck2 CHECK (reliability IS NULL OR reliability IN
+                     ('HIGH','MEDIUM','LOW','UNVERIFIED')),
+    CONSTRAINT xxwla_geo_cache_ck3 CHECK (latitude  IS NULL OR
+                     latitude  BETWEEN  -90 AND  90),
+    CONSTRAINT xxwla_geo_cache_ck4 CHECK (longitude IS NULL OR
+                     longitude BETWEEN -180 AND 180),
+    -- Null island guard: 0,0 is the classic geocoding failure signature.
+    CONSTRAINT xxwla_geo_cache_ck5 CHECK (NOT (latitude = 0 AND longitude = 0)),
+    -- A resolved row must carry coordinates and a citation.
+    CONSTRAINT xxwla_geo_cache_ck6 CHECK (
+        resolution_level = 'UNRESOLVED'
+        OR (latitude IS NOT NULL AND longitude IS NOT NULL
+            AND reliability IS NOT NULL AND citation_url IS NOT NULL))
 );
 
 
-CREATE OR REPLACE VIEW MCP_VIEWS.XXWLA_DEMAND_V AS
+--------------------------------------------------------------------------------
+-- xxwla_candidate_site
+-- Candidate metros to evaluate. Populated by the geo agent (Mode B) from
+-- markets near the demand centre of gravity, then refined by the business.
+-- EBS has no concept of a warehouse that does not yet exist.
+--------------------------------------------------------------------------------
+CREATE TABLE xxwla_candidate_site (
+    site_id              NUMBER         NOT NULL,
+    site_name            VARCHAR2(200)  NOT NULL,
+    region               VARCHAR2(100),
+    site_country         VARCHAR2(60)   NOT NULL,
+    site_state           VARCHAR2(60),
+    site_city            VARCHAR2(60),
+    latitude             NUMBER         NOT NULL,
+    longitude            NUMBER         NOT NULL,
+    is_existing_node     VARCHAR2(1)    DEFAULT 'N' NOT NULL,
+    active_flag          VARCHAR2(1)    DEFAULT 'Y' NOT NULL,
+    -- Provenance: how this candidate came to be on the list.
+    category             VARCHAR2(30),  -- EXISTING_NODE|ESTABLISHED_HUB|
+                                        -- EMERGING_MARKET
+    rationale            VARCHAR2(2000),
+    infrastructure_note  VARCHAR2(2000),
+    source_url           VARCHAR2(1000),
+    distance_from_cog_km NUMBER,        -- distance from demand centre of gravity
+    created_by_agent     VARCHAR2(100),
+    business_reviewed    VARCHAR2(1)    DEFAULT 'N' NOT NULL,
+    creation_date        DATE           DEFAULT SYSDATE NOT NULL,
+    last_update_date     DATE           DEFAULT SYSDATE NOT NULL,
+    CONSTRAINT xxwla_cand_site_pk  PRIMARY KEY (site_id),
+    CONSTRAINT xxwla_cand_site_u1  UNIQUE (site_country, site_name),
+    CONSTRAINT xxwla_cand_site_ck1 CHECK (active_flag      IN ('Y','N')),
+    CONSTRAINT xxwla_cand_site_ck2 CHECK (is_existing_node IN ('Y','N')),
+    CONSTRAINT xxwla_cand_site_ck3 CHECK (business_reviewed IN ('Y','N')),
+    CONSTRAINT xxwla_cand_site_ck4 CHECK (latitude  BETWEEN  -90 AND  90),
+    CONSTRAINT xxwla_cand_site_ck5 CHECK (longitude BETWEEN -180 AND 180),
+    CONSTRAINT xxwla_cand_site_ck6 CHECK (NOT (latitude = 0 AND longitude = 0)),
+    CONSTRAINT xxwla_cand_site_ck7 CHECK (category IS NULL OR category IN
+                     ('EXISTING_NODE','ESTABLISHED_HUB','EMERGING_MARKET'))
+);
+
+CREATE INDEX xxwla_cand_site_n1 ON xxwla_candidate_site (site_country, region);
+
+--------------------------------------------------------------------------------
+-- xxwla_network_v
+-- Active inventory organisations with address and resolved coordinates.
+-- Coordinates come from the geocode cache; NULL means not yet geocoded, which
+-- surfaces in xxwla_geo_pending_v.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE VIEW xxwla_network_v AS
+SELECT  hou.name                                AS operating_unit,
+        hoi.org_information3                    AS org_id,
+        mp.organization_id                      AS organization_id,
+        mp.organization_code                    AS organization_code,
+        haou.name                               AS organization_name,
+        UPPER(TRIM(hla.country))                AS node_country,
+        TRIM(hla.region_2)                      AS node_state,
+        TRIM(hla.town_or_city)                  AS node_city,
+        UPPER(TRIM(hla.postal_code))            AS node_postal_code,
+        c.latitude                              AS latitude,
+        c.longitude                             AS longitude,
+        'WAREHOUSE'                             AS node_type,
+        'Y'                                     AS active_flag
+  FROM  mtl_parameters             mp
+  JOIN  hr_all_organization_units  haou ON haou.organization_id =
+                                           mp.organization_id
+  JOIN  hr_locations_all           hla  ON hla.location_id = haou.location_id
+  LEFT JOIN hr_organization_information hoi
+         ON hoi.organization_id = mp.organization_id
+        AND hoi.org_information_context = 'Accounting Information'
+  LEFT JOIN hr_operating_units     hou
+         ON hou.organization_id = TO_NUMBER(hoi.org_information3)
+  LEFT JOIN xxwla_geo_postal_cache c
+         ON c.geo_country      = UPPER(TRIM(hla.country))
+        AND c.geo_postal_code  = UPPER(TRIM(hla.postal_code))
+        AND c.resolution_level <> 'UNRESOLVED'
+ WHERE  TRUNC(SYSDATE) BETWEEN haou.date_from
+                           AND NVL(haou.date_to, TO_DATE('31-12-4712','DD-MM-YYYY'))
+   -- Inventory organisations only; exclude master orgs that aren't physical
+   -- stocking points.
+   AND  mp.organization_id <> mp.master_organization_id;
+
+--------------------------------------------------------------------------------
+-- xxwla_demand_v
+-- Shipped demand at postal x month x ship-from org x item grain.
+-- Plain view over all data. Filtering by OU, period and region is applied by
+-- the MCP tool's WHERE clause, not inside the view.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE VIEW xxwla_demand_v AS
 SELECT  hou.name                                    AS operating_unit,
         ool.org_id                                  AS org_id,
-        TRUNC(ool.actual_shipment_date,'MM')        AS period_month,
+        TRUNC(ool.actual_shipment_date,'MM')              AS period_month,
         ool.ship_from_org_id                        AS ship_from_org_id,
         mp.organization_code                        AS ship_from_org_code,
         ool.inventory_item_id                       AS inventory_item_id,
@@ -80,6 +148,8 @@ SELECT  hou.name                                    AS operating_unit,
         TRIM(hl.state)                              AS ship_to_state,
         TRIM(hl.city)                               AS ship_to_city,
         UPPER(TRIM(hl.postal_code))                 AS ship_to_postal_code,
+        -- US census-style region grouping. Extend or replace with your own
+        -- mapping table if the business uses different territories.
         CASE
           WHEN UPPER(TRIM(hl.country)) <> 'US' THEN 'NON-US'
           WHEN hl.state IN ('CT','ME','MA','NH','RI','VT','NJ','NY','PA')
@@ -98,6 +168,7 @@ SELECT  hou.name                                    AS operating_unit,
         END                                         AS region,
         SUM(NVL(wdd.shipped_quantity,0))            AS units,
         MAX(ool.order_quantity_uom)                 AS uom_code,
+        -- Actual shipped weight preferred; item-master estimate as fallback.
         SUM(NVL(wdd.net_weight,
                 NVL(msi.unit_weight,0) * NVL(wdd.shipped_quantity,0)))
                                                     AS weight_kg,
@@ -107,6 +178,7 @@ SELECT  hou.name                                    AS operating_unit,
         SUM(NVL(wdd.shipped_quantity,0) * NVL(ool.unit_selling_price,0))
                                                     AS amount,
         MAX(ooh.transactional_curr_code)            AS currency_code,
+        -- Records whether weight/volume came from the shipment or was derived.
         CASE WHEN COUNT(wdd.net_weight) > 0 THEN 'ACTUAL'
              WHEN MAX(NVL(msi.unit_weight,0)) > 0  THEN 'ESTIMATE'
              ELSE 'NONE' END                        AS wv_source,
@@ -115,7 +187,7 @@ SELECT  hou.name                                    AS operating_unit,
   JOIN  oe_order_headers_all      ooh  ON ooh.header_id = ool.header_id
   JOIN  wsh_delivery_details      wdd  ON wdd.source_line_id = ool.line_id
                                       AND wdd.source_code    = 'OE'
-                                      AND wdd.released_status = 'C'
+                                      AND wdd.released_status = 'C'   -- shipped
   JOIN  hz_cust_site_uses_all     hcsu ON hcsu.site_use_id = ool.ship_to_org_id
                                       AND hcsu.site_use_code = 'SHIP_TO'
                                       AND hcsu.status = 'A'
@@ -137,7 +209,7 @@ SELECT  hou.name                                    AS operating_unit,
   LEFT JOIN mtl_categories_b      mc   ON mc.category_id = mic.category_id
  WHERE  ool.cancelled_flag  = 'N'
    AND  ool.open_flag      IN ('N','Y')
-   AND  NVL(ool.line_category_code,'ORDER') = 'ORDER'
+   AND  NVL(ool.line_category_code,'ORDER') = 'ORDER'   -- excludes RMA lines
    AND  ool.actual_shipment_date IS NOT NULL
  GROUP BY hou.name, ool.org_id, TRUNC(ool.actual_shipment_date,'MM'),
         ool.ship_from_org_id, mp.organization_code,
@@ -161,7 +233,11 @@ SELECT  hou.name                                    AS operating_unit,
           ELSE 'Unmapped'
         END;
 
-CREATE OR REPLACE VIEW MCP_VIEWS.XXWLA_GEO_PENDING_V AS
+--------------------------------------------------------------------------------
+-- Pending queue: postal codes in demand or network but not yet geocoded,
+-- ordered by volume at risk. This replaces pending_geocodes.py.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE VIEW xxwla_geo_pending_v AS
 SELECT  src.geo_country,
         src.geo_postal_code,
         MAX(src.geo_city)           AS geo_city,
@@ -175,15 +251,17 @@ SELECT  src.geo_country,
                 d.ship_to_state       AS geo_state,
                 d.units               AS units_at_risk,
                 'DEMAND'              AS source_object
-           FROM mcp_views.xxwla_demand_v d
+           FROM xxwla_demand_v d
           WHERE d.ship_to_postal_code IS NOT NULL
          UNION ALL
+         -- Network rows carry zero units but MUST be geocoded: an existing
+         -- warehouse without coordinates is invisible to the overlap test.
          SELECT n.node_country, n.node_postal_code, n.node_city, n.node_state,
                 0, 'NETWORK'
-           FROM mcp_views.xxwla_network_v n
+           FROM xxwla_network_v n
           WHERE n.node_postal_code IS NOT NULL
         ) src
-  LEFT JOIN mcp_views.xxwla_geo_postal_cache c
+  LEFT JOIN xxwla_geo_postal_cache c
          ON c.geo_country     = src.geo_country
         AND c.geo_postal_code = src.geo_postal_code
  WHERE  c.geo_postal_code IS NULL
@@ -191,41 +269,12 @@ SELECT  src.geo_country,
  GROUP BY src.geo_country, src.geo_postal_code
  ORDER BY SUM(src.units_at_risk) DESC;
 
-CREATE OR REPLACE VIEW MCP_VIEWS.XXWLA_NETWORK_V AS
-SELECT  hou.name                                AS operating_unit,
-        hoi.org_information3                    AS org_id,
-        mp.organization_id                      AS organization_id,
-        mp.organization_code                    AS organization_code,
-        haou.name                               AS organization_name,
-        UPPER(TRIM(hla.country))                AS node_country,
-        TRIM(hla.region_2)                      AS node_state,
-        TRIM(hla.town_or_city)                  AS node_city,
-        UPPER(TRIM(hla.postal_code))            AS node_postal_code,
-        c.latitude                              AS latitude,
-        c.longitude                             AS longitude,
-        'WAREHOUSE'                             AS node_type,
-        'Y'                                     AS active_flag
-  FROM  mtl_parameters             mp
-  JOIN  hr_all_organization_units  haou ON haou.organization_id =
-                                           mp.organization_id
-  JOIN  hr_locations_all           hla  ON hla.location_id = haou.location_id
-  LEFT JOIN hr_organization_information hoi
-         ON hoi.organization_id = mp.organization_id
-        AND hoi.org_information_context = 'Accounting Information'
-  LEFT JOIN hr_operating_units     hou
-         ON hou.organization_id = TO_NUMBER(hoi.org_information3)
-  LEFT JOIN mcp_views.xxwla_geo_postal_cache c
-         ON c.geo_country      = UPPER(TRIM(hla.country))
-        AND c.geo_postal_code  = UPPER(TRIM(hla.postal_code))
-        AND c.resolution_level <> 'UNRESOLVED'
- WHERE  TRUNC(SYSDATE) BETWEEN haou.date_from
-                           AND NVL(haou.date_to, TO_DATE('31-12-4712','DD-MM-YYYY'))
-   AND  mp.organization_id <> mp.master_organization_id;
-
-
--- Grants for the MCP database user (as used by the agents)
-GRANT SELECT                         ON MCP_VIEWS.XXWLA_DEMAND_V         TO MCP_READER;
-GRANT SELECT                         ON MCP_VIEWS.XXWLA_GEO_PENDING_V    TO MCP_READER;
-GRANT SELECT                         ON MCP_VIEWS.XXWLA_NETWORK_V        TO MCP_READER;
-GRANT SELECT, INSERT, UPDATE         ON MCP_VIEWS.XXWLA_GEO_POSTAL_CACHE TO MCP_READER;
-GRANT SELECT, INSERT, UPDATE, DELETE ON MCP_VIEWS.XXWLA_CANDIDATE_SITE   TO MCP_READER;
+-- -----------------------------------------------------------------------------
+-- Grants for the MCP database user. No DELETE on the geocode cache: the
+-- database itself enforces that geocodes are never removed.
+-- -----------------------------------------------------------------------------
+GRANT SELECT                         ON xxwla_demand_v         TO mcp_reader;
+GRANT SELECT                         ON xxwla_network_v        TO mcp_reader;
+GRANT SELECT                         ON xxwla_geo_pending_v    TO mcp_reader;
+GRANT SELECT, INSERT, UPDATE         ON xxwla_geo_postal_cache TO mcp_reader;
+GRANT SELECT, INSERT, UPDATE, DELETE ON xxwla_candidate_site   TO mcp_reader;

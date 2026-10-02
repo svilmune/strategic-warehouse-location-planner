@@ -1,0 +1,2386 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Web IQ",
+    "description": "Microsoft Web IQ is a suite of AI-native APIs that gives applications access to fresh, real-world intelligence from across the web, including search results, web pages, news, images, and videos.",
+    "version": "v3.0.0"
+  },
+  "paths": {
+    "/browse": {
+      "post": {
+        "tags": [
+          "Browse"
+        ],
+        "summary": "Browse and extract content from a web page",
+        "description": "Fetches and extracts content from a specified URL. Supports live crawling, dynamic page rendering, and multiple output formats.",
+        "operationId": "Browse",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrowseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowseResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowseResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "430": {
+            "description": "Too Many On-Demand Crawls",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search/web": {
+      "post": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Search the web for relevant content",
+        "description": "Performs a web search and returns structured results with content from matching web pages.",
+        "operationId": "WebSearch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiErrorResponse": {
+        "type": "object",
+        "properties": {
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorCategory": {
+            "type": "string",
+            "nullable": true
+          },
+          "userMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "technicalDetails": {
+            "type": "string",
+            "nullable": true
+          },
+          "retryAfter": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestId": {
+            "type": "string",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BrowseContentFormat": {
+        "enum": [
+          "text",
+          "html",
+          "markdown"
+        ],
+        "type": "string"
+      },
+      "BrowseRequest": {
+        "required": [
+          "url"
+        ],
+        "type": "object",
+        "properties": {
+          "url": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The URL of the web page to browse."
+          },
+          "maxLength": {
+            "maximum": 500000,
+            "minimum": 1,
+            "type": "integer",
+            "description": "The maximum number of characters in the content field in response. Default value is 10000 characters, and maximum value is 500000 characters.",
+            "format": "int32",
+            "default": 10000,
+            "nullable": true
+          },
+          "liveCrawl": {
+            "$ref": "#/components/schemas/LiveCrawlMode"
+          },
+          "includeWebLinks": {
+            "type": "boolean",
+            "description": "Include outbound hyperlinks from the page. Default is false.",
+            "default": false,
+            "nullable": true
+          },
+          "renderDynamicPages": {
+            "type": "boolean",
+            "description": "Enable JavaScript rendering for dynamic content screenshot. Only works when liveCrawl is set to 'fallback' or 'force'. Default is false.",
+            "default": false,
+            "nullable": true
+          },
+          "includeImageLinks": {
+            "type": "boolean",
+            "description": "Include image URLs from the page. Default is false.",
+            "default": false,
+            "nullable": true
+          },
+          "language": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string",
+            "description": "The language code (2-letter ISO 639-1). Default is 'en'.",
+            "default": "en",
+            "nullable": true
+          },
+          "region": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string",
+            "description": "The region code (2-letter country/region code). Default is 'US'.",
+            "default": "US",
+            "nullable": true
+          },
+          "contentFormat": {
+            "$ref": "#/components/schemas/BrowseContentFormat"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BrowseResponse": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The URL of the web page.",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the web page.",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "description": "The extracted content of the web page.",
+            "nullable": true
+          },
+          "isAdult": {
+            "type": "boolean",
+            "description": "Indicates if the content is adult content.",
+            "nullable": true
+          },
+          "lastUpdatedAt": {
+            "type": "string",
+            "description": "The last updated date of the webpage, follows ISO8601 format.",
+            "nullable": true
+          },
+          "crawledAt": {
+            "type": "string",
+            "description": "The last crawled date of the webpage, follows ISO8601 format.",
+            "nullable": true
+          },
+          "retryAfter": {
+            "type": "string",
+            "description": "Retry after value when on-demand crawl is in progress. Only present when the page needs to be crawled.",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "Trace ID for debugging and tracking.",
+            "nullable": true
+          },
+          "liveCrawlSucceeded": {
+            "type": "boolean",
+            "description": "Only present as false when an auto or force live-crawl response returns a stale page. Omitted otherwise.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "LiveCrawlMode": {
+        "enum": [
+          "none",
+          "fallback",
+          "force"
+        ],
+        "type": "string"
+      },
+      "ContentFormat": {
+        "enum": [
+          "passage",
+          "text",
+          "html",
+          "markdown"
+        ],
+        "type": "string"
+      },
+      "ContentTier": {
+        "enum": [
+          "standard",
+          "entitled",
+          "premium"
+        ],
+        "type": "string"
+      },
+      "ImageAspectRatio": {
+        "enum": [
+          "square",
+          "wide",
+          "tall"
+        ],
+        "type": "string"
+      },
+      "ImageColor": {
+        "enum": [
+          "colorOnly",
+          "monochrome"
+        ],
+        "type": "string"
+      },
+      "ImageItem": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The title of the image.",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "The source URL of the image. For China users with URL redirection enabled, this field instead contains the same redirect URL as clickUrl.",
+            "nullable": true
+          },
+          "domain": {
+            "type": "string",
+            "description": "The destination host for the result. Returned only for China users with URL redirection enabled.",
+            "nullable": true
+          },
+          "hostPageUrl": {
+            "type": "string",
+            "description": "The host page URL of the image.",
+            "nullable": true
+          },
+          "caption": {
+            "type": "string",
+            "description": "Generated description of the image.",
+            "nullable": true
+          },
+          "width": {
+            "type": "integer",
+            "description": "The width of the image, in pixels.",
+            "format": "int32"
+          },
+          "height": {
+            "type": "integer",
+            "description": "The height of the image, in pixels.",
+            "format": "int32"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "description": "The thumbnail source URL of the image.",
+            "nullable": true
+          },
+          "lastUpdatedAt": {
+            "type": "string",
+            "description": "The last updated date of the image, follows ISO8601 format.",
+            "nullable": true
+          },
+          "isAdult": {
+            "type": "boolean",
+            "description": "Indicates whether the content is adult content."
+          },
+          "clickUrl": {
+            "type": "string",
+            "description": "Redirect URL that proxies through Bing. Only present when redirect is enabled.",
+            "nullable": true
+          },
+          "instrumentationSuffix": {
+            "type": "string",
+            "description": "Suffix to append to the instrumentation ping URL base for this result item.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ImageSize": {
+        "enum": [
+          "small",
+          "medium",
+          "large",
+          "extraLarge"
+        ],
+        "type": "string"
+      },
+      "ImagesRequest": {
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "properties": {
+          "query": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "type": "string",
+            "description": "A search query string"
+          },
+          "maxResults": {
+            "maximum": 30,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Max number of results to return. Default is 30 and maximum value is 30.",
+            "format": "int32",
+            "default": 30,
+            "nullable": true
+          },
+          "language": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string",
+            "description": "A 2-letter ISO 639-1 language code for interface language in the search results. Default: 'en'.",
+            "default": "en",
+            "nullable": true
+          },
+          "region": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string",
+            "description": "A 2-letter country/region code for where the results should come from (e.g. 'US', 'JP', 'CN'). Default is 'US'.",
+            "default": "US",
+            "nullable": true
+          },
+          "aspectRatio": {
+            "$ref": "#/components/schemas/ImageAspectRatio"
+          },
+          "color": {
+            "$ref": "#/components/schemas/ImageColor"
+          },
+          "safeSearch": {
+            "$ref": "#/components/schemas/SafeSearch"
+          },
+          "imageSize": {
+            "$ref": "#/components/schemas/ImageSize"
+          },
+          "watermarkFree": {
+            "type": "boolean",
+            "description": "Exclude images with watermark. Default is false.",
+            "default": false,
+            "nullable": true
+          },
+          "maxHeight": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Maximum image height in pixels. Used with imageSize for custom bounds.",
+            "format": "int32",
+            "nullable": true
+          },
+          "minHeight": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Minimum image height in pixels.",
+            "format": "int32",
+            "nullable": true
+          },
+          "maxWidth": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Maximum image width in pixels.",
+            "format": "int32",
+            "nullable": true
+          },
+          "minWidth": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Minimum image width in pixels.",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ImagesResponse": {
+        "type": "object",
+        "properties": {
+          "imageResults": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImageItem"
+            },
+            "description": "List of image results.",
+            "nullable": true
+          },
+          "instrumentationClickBase": {
+            "type": "string",
+            "description": "Base URL for click ping requests. Append an instrumentationSuffix value from a result item to form the full ping URL.",
+            "nullable": true
+          },
+          "instrumentationCitationBase": {
+            "type": "string",
+            "description": "Base URL for LLM log ping requests. Append a DATA payload to form the full ping URL.",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "Trace ID for debugging and tracking.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NewsItem": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The title of the news.",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "The source URL of the news article. For China users with URL redirection enabled, this field instead contains the same redirect URL as clickUrl.",
+            "nullable": true
+          },
+          "domain": {
+            "type": "string",
+            "description": "The destination host for the result. Returned only for China users with URL redirection enabled.",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "description": "The detailed content of the news.",
+            "nullable": true
+          },
+          "thumbnail": {
+            "$ref": "#/components/schemas/NewsThumbnail"
+          },
+          "lastUpdatedAt": {
+            "type": "string",
+            "description": "The last updated date of the news, in UTC ISO8601 format.",
+            "nullable": true
+          },
+          "crawledAt": {
+            "type": "string",
+            "description": "The last crawled date of the news, follows ISO8601 format.",
+            "nullable": true
+          },
+          "language": {
+            "type": "string",
+            "description": "The language of the news article, uses ISO 639-1 language code.",
+            "nullable": true
+          },
+          "source": {
+            "type": "string",
+            "description": "Publisher name, such as 'USA TODAY | MSN', 'CNN', etc.",
+            "nullable": true
+          },
+          "isAdult": {
+            "type": "boolean",
+            "description": "Indicates if the content is adult content."
+          },
+          "clickUrl": {
+            "type": "string",
+            "description": "Redirect URL that proxies through Bing. Only present when redirect is enabled.",
+            "nullable": true
+          },
+          "instrumentationSuffix": {
+            "type": "string",
+            "description": "Suffix to append to the instrumentation ping URL base for this result item.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NewsRequest": {
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "properties": {
+          "query": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "type": "string",
+            "description": "A search query for the news."
+          },
+          "maxResults": {
+            "maximum": 20,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Max number of results to return. Default is 10 and maximum value is 20.",
+            "format": "int32",
+            "default": 10,
+            "nullable": true
+          },
+          "language": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string",
+            "description": "A 2-letter ISO 639-1 language code for interface language in the search results. Default: 'en'.",
+            "default": "en",
+            "nullable": true
+          },
+          "region": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string",
+            "description": "A 2-letter country/region code for where the results should come from (e.g. 'US', 'JP', 'CN'). Default is 'US'.",
+            "default": "US",
+            "nullable": true
+          },
+          "location": {
+            "type": "string",
+            "description": "Location information in format 'lat:<float>;long:<float>', e.g. 'lat:40.753250;long:-74.003807'. If not specified, could infer location in query.",
+            "nullable": true
+          },
+          "contentFormat": {
+            "$ref": "#/components/schemas/ContentFormat"
+          },
+          "maxLength": {
+            "maximum": 500000,
+            "minimum": 1,
+            "type": "integer",
+            "description": "The maximum number of characters in the content field in response. Default value is 10000 characters, and maximum value is 500000 characters.",
+            "format": "int32",
+            "default": 10000,
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NewsResponse": {
+        "type": "object",
+        "properties": {
+          "newsResults": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewsItem"
+            },
+            "description": "List of news article results.",
+            "nullable": true
+          },
+          "instrumentationClickBase": {
+            "type": "string",
+            "description": "Base URL for click ping requests. Append an instrumentationSuffix value from a result item to form the full ping URL.",
+            "nullable": true
+          },
+          "instrumentationCitationBase": {
+            "type": "string",
+            "description": "Base URL for LLM log ping requests. Append a DATA payload to form the full ping URL.",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "Trace ID for debugging and tracking.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NewsThumbnail": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The URL of the thumbnail.",
+            "nullable": true
+          },
+          "width": {
+            "type": "integer",
+            "description": "Width of the thumbnail, in pixels.",
+            "format": "int32"
+          },
+          "height": {
+            "type": "integer",
+            "description": "Height of the thumbnail, in pixels.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PlaylistItem": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Title of the playlist.",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the playlist.",
+            "nullable": true
+          },
+          "videos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlaylistVideo"
+            },
+            "description": "Array of videos in the playlist.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PlaylistVideo": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Title of the video.",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the video.",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "URL of the video.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SafeSearch": {
+        "enum": [
+          "off",
+          "strict"
+        ],
+        "type": "string"
+      },
+      "VideoDuration": {
+        "enum": [
+          "short",
+          "medium",
+          "long"
+        ],
+        "type": "string"
+      },
+      "VideoItem": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The title or name of the video.",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "The source URL of the video. For China users with URL redirection enabled, this field instead contains the same redirect URL as clickUrl.",
+            "nullable": true
+          },
+          "domain": {
+            "type": "string",
+            "description": "The destination host for the result. Returned only for China users with URL redirection enabled.",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the video content. This is either given by video uploader or generated by LLM",
+            "nullable": true
+          },
+          "publishedBy": {
+            "type": "string",
+            "description": "Uploader or publisher of the video.",
+            "nullable": true
+          },
+          "viewCount": {
+            "type": "integer",
+            "description": "The number of views the video has.",
+            "format": "int64"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Short summary or highlight of the video.",
+            "nullable": true
+          },
+          "length": {
+            "type": "string",
+            "description": "The length of the video in HH:MM:SS format.",
+            "nullable": true
+          },
+          "allowHttpsEmbedding": {
+            "type": "boolean",
+            "description": "Whether HTTPS embedding is allowed."
+          },
+          "allowMobileEmbedding": {
+            "type": "boolean",
+            "description": "Whether mobile embedding is allowed."
+          },
+          "embeddingUrl": {
+            "type": "string",
+            "description": "URL for embedding the video.",
+            "nullable": true
+          },
+          "lastUpdatedAt": {
+            "type": "string",
+            "description": "The last updated date as a formatted string.",
+            "nullable": true
+          },
+          "bestMomentIndex": {
+            "type": "integer",
+            "description": "Index of the best moment or highlight in the video.",
+            "format": "int32",
+            "nullable": true
+          },
+          "moments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VideoMoment"
+            },
+            "description": "Array of video segments/moments.",
+            "nullable": true
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "description": "Thumbnail URL of the video.",
+            "nullable": true
+          },
+          "width": {
+            "type": "integer",
+            "description": "The width of the video in pixels.",
+            "format": "int32",
+            "nullable": true
+          },
+          "height": {
+            "type": "integer",
+            "description": "The height of the video in pixels.",
+            "format": "int32",
+            "nullable": true
+          },
+          "isAdult": {
+            "type": "boolean",
+            "description": "Indicates whether the result includes adult content."
+          },
+          "clickUrl": {
+            "type": "string",
+            "description": "Redirect URL that proxies through Bing. Only present when redirect is enabled.",
+            "nullable": true
+          },
+          "instrumentationSuffix": {
+            "type": "string",
+            "description": "Suffix to append to the instrumentation ping URL base for this result item.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "VideoMoment": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Title of the moment segment.",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of what happens in this moment.",
+            "nullable": true
+          },
+          "startTime": {
+            "type": "string",
+            "description": "Start time of the moment in format 'd.hh:mm:ss'.",
+            "nullable": true
+          },
+          "endTime": {
+            "type": "string",
+            "description": "End time of the moment in format 'd.hh:mm:ss'.",
+            "nullable": true
+          },
+          "momentUrl": {
+            "type": "string",
+            "description": "Direct URL to this specific moment in the video.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "VideoResolution": {
+        "enum": [
+          "360p",
+          "480p",
+          "720p",
+          "1080p"
+        ],
+        "type": "string"
+      },
+      "VideosRequest": {
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "properties": {
+          "query": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "type": "string",
+            "description": "A search query string"
+          },
+          "maxResults": {
+            "maximum": 30,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Max number of results to return. Default is 30 and maximum value is 30.",
+            "format": "int32",
+            "default": 30,
+            "nullable": true
+          },
+          "language": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string",
+            "description": "A 2-letter ISO 639-1 language code for interface language in the search results. Default: 'en'.",
+            "default": "en",
+            "nullable": true
+          },
+          "region": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string",
+            "description": "A 2-letter country/region code for where the results should come from (e.g. 'US', 'JP', 'CN'). Default is 'US'.",
+            "default": "US",
+            "nullable": true
+          },
+          "enablePlaylist": {
+            "type": "boolean",
+            "description": "Whether to include playlist results in response. Default is false.",
+            "default": false,
+            "nullable": true
+          },
+          "freshness": {
+            "type": "string",
+            "description": "The time range to filter results based on discovery date. Supports 'week', 'month', 'year' for relative time, or ISO 8601 date interval format: 'YYYY-MM-DD/YYYY-MM-DD' or 'YYYY-MM-DDTHH:mm:ssZ/YYYY-MM-DDTHH:mm:ssZ' for a date/datetime range, use .. to omit start or end date.",
+            "nullable": true
+          },
+          "embeddable": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filter videos by embedding capabilities. Allowed values: 'player' (has embeddable player). When not set, no filtering is applied.",
+            "nullable": true
+          },
+          "resolution": {
+            "$ref": "#/components/schemas/VideoResolution"
+          },
+          "safeSearch": {
+            "$ref": "#/components/schemas/SafeSearch"
+          },
+          "duration": {
+            "$ref": "#/components/schemas/VideoDuration"
+          }
+        },
+        "additionalProperties": false
+      },
+      "VideosResponse": {
+        "type": "object",
+        "properties": {
+          "videoResults": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VideoItem"
+            },
+            "description": "List of video results.",
+            "nullable": true
+          },
+          "playlists": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlaylistItem"
+            },
+            "description": "List of playlist results.",
+            "nullable": true
+          },
+          "instrumentationClickBase": {
+            "type": "string",
+            "description": "Base URL for click ping requests. Append an instrumentationSuffix value from a result item to form the full ping URL.",
+            "nullable": true
+          },
+          "instrumentationCitationBase": {
+            "type": "string",
+            "description": "Base URL for LLM log ping requests. Append a DATA payload to form the full ping URL.",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "Trace ID for debugging and tracking.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "WebRequest": {
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "properties": {
+          "query": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "type": "string",
+            "description": "A search query string. Supports 'site:' and '-site:' operators to include or exclude results from specific sites (e.g. 'query site:example.com'). Use these operators only when necessary, as they inherently reduce result relevance."
+          },
+          "maxResults": {
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Max number of results to return. Default is 10 and maximum value is 50.",
+            "format": "int32",
+            "default": 10,
+            "nullable": true
+          },
+          "language": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string",
+            "description": "A 2-letter ISO 639-1 language code for interface language in the search results. Default: 'en'.",
+            "default": "en",
+            "nullable": true
+          },
+          "region": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string",
+            "description": "A 2-letter country/region code for where the results should come from (e.g. 'US', 'JP', 'CN'). Default is 'US'.",
+            "default": "US",
+            "nullable": true
+          },
+          "location": {
+            "type": "string",
+            "description": "Location information in format 'lat:<float>;long:<float>'.",
+            "nullable": true
+          },
+          "contentFormat": {
+            "$ref": "#/components/schemas/ContentFormat"
+          },
+          "maxLength": {
+            "maximum": 500000,
+            "minimum": 1,
+            "type": "integer",
+            "description": "The maximum number of characters in the content or passage field in response. Default value is 10000 characters, and maximum value is 500000 characters.",
+            "format": "int32",
+            "default": 10000,
+            "nullable": true
+          },
+          "safeSearch": {
+            "$ref": "#/components/schemas/SafeSearch"
+          }
+        },
+        "additionalProperties": false
+      },
+      "WebResponse": {
+        "type": "object",
+        "properties": {
+          "webResults": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WebResult"
+            },
+            "description": "List of web page results.",
+            "nullable": true
+          },
+          "instrumentationClickBase": {
+            "type": "string",
+            "description": "Base URL for click ping requests. Append an instrumentationSuffix value from a result item to form the full ping URL.",
+            "nullable": true
+          },
+          "instrumentationCitationBase": {
+            "type": "string",
+            "description": "Base URL for LLM log ping requests. Append a DATA payload to form the full ping URL.",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "Trace ID for debugging and tracking.",
+            "nullable": true
+          },
+          "querySignals": {
+            "$ref": "#/components/schemas/WebQuerySignals"
+          },
+          "riskLevel": {
+            "$ref": "#/components/schemas/RiskLevel"
+          }
+        },
+        "additionalProperties": false
+      },
+      "WebResult": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The title of the webpage.",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "The source URL of the webpage. For China users with URL redirection enabled, this field instead contains the same redirect URL as clickUrl.",
+            "nullable": true
+          },
+          "domain": {
+            "type": "string",
+            "description": "The destination host for the result. Returned only for China users with URL redirection enabled.",
+            "nullable": true
+          },
+          "content": {
+            "type": "string",
+            "description": "The detailed content of the webpage.",
+            "nullable": true
+          },
+          "lastUpdatedAt": {
+            "type": "string",
+            "description": "The last updated date of the webpage, follows ISO8601 format.",
+            "nullable": true
+          },
+          "crawledAt": {
+            "type": "string",
+            "description": "The last crawled date of the webpage, follows ISO8601 format.",
+            "nullable": true
+          },
+          "language": {
+            "type": "string",
+            "description": "The language of the webpage, uses ISO 639-1 language code.",
+            "nullable": true
+          },
+          "isAdult": {
+            "type": "boolean",
+            "description": "Indicates whether the result includes adult content."
+          },
+          "contentTier": {
+            "$ref": "#/components/schemas/ContentTier"
+          },
+          "clickUrl": {
+            "type": "string",
+            "description": "Redirect URL that proxies through Bing. Only present when redirect is enabled.",
+            "nullable": true
+          },
+          "instrumentationSuffix": {
+            "type": "string",
+            "description": "Suffix to append to the instrumentation ping URL base for this result item.",
+            "nullable": true
+          },
+          "sourceQuality": {
+            "$ref": "#/components/schemas/SourceQuality"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SourceQuality": {
+        "enum": [
+          "insufficient",
+          "adequate",
+          "preferred"
+        ],
+        "type": "string"
+      },
+      "WebQuerySignals": {
+        "type": "object",
+        "properties": {
+          "freshness": {
+            "type": "boolean",
+            "description": "Indicates whether fresh documents should be prioritized over other documents for this query.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RiskLevel": {
+        "enum": [
+          "low",
+          "moderate",
+          "high",
+          "veryHigh"
+        ],
+        "type": "string"
+      },
+      "AutoEvidenceCitation": {
+        "type": "object",
+        "properties": {
+          "contentSource": {
+            "type": "string",
+            "description": "Citation source.",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "description": "Citation title.",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "Citation URL.",
+            "nullable": true
+          },
+          "lastUpdatedAt": {
+            "type": "string",
+            "description": "Citation last-updated timestamp.",
+            "nullable": true
+          },
+          "crawledAt": {
+            "type": "string",
+            "description": "Citation crawl timestamp.",
+            "nullable": true
+          },
+          "language": {
+            "type": "string",
+            "description": "Citation content language.",
+            "nullable": true
+          },
+          "isAdult": {
+            "type": "boolean",
+            "description": "Whether the citation contains adult content.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AutoEvidenceResult": {
+        "type": "object",
+        "properties": {
+          "evidence": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/TextEvidence"
+              },
+              {
+                "$ref": "#/components/schemas/ImageEvidence"
+              },
+              {
+                "$ref": "#/components/schemas/VideoEvidence"
+              },
+              {
+                "$ref": "#/components/schemas/WeatherEvidence"
+              },
+              {
+                "$ref": "#/components/schemas/TimeZoneEvidence"
+              }
+            ],
+            "description": "Generated evidence content.",
+            "nullable": true,
+            "discriminator": {
+              "propertyName": "type",
+              "mapping": {
+                "text": "#/components/schemas/TextEvidence",
+                "media/image": "#/components/schemas/ImageEvidence",
+                "media/video": "#/components/schemas/VideoEvidence",
+                "structured/weather": "#/components/schemas/WeatherEvidence",
+                "structured/timeZone": "#/components/schemas/TimeZoneEvidence"
+              }
+            }
+          },
+          "citations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AutoEvidenceCitation"
+            },
+            "description": "Citations supporting this evidence result.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CurrentWeather": {
+        "type": "object",
+        "properties": {
+          "condition": {
+            "type": "string",
+            "description": "Current weather condition.",
+            "nullable": true
+          },
+          "dayPeriod": {
+            "type": "string",
+            "description": "Current part of the day.",
+            "nullable": true
+          },
+          "uvLevel": {
+            "type": "string",
+            "description": "Textual UV level.",
+            "nullable": true
+          },
+          "observedAt": {
+            "type": "string",
+            "description": "Observation time.",
+            "nullable": true
+          },
+          "temperature": {
+            "type": "number",
+            "description": "Current temperature.",
+            "format": "float",
+            "nullable": true
+          },
+          "feelsLike": {
+            "type": "number",
+            "description": "Apparent temperature.",
+            "format": "float",
+            "nullable": true
+          },
+          "universalThermalClimateIndex": {
+            "type": "number",
+            "description": "Universal Thermal Climate Index value.",
+            "format": "float",
+            "nullable": true
+          },
+          "humidity": {
+            "type": "number",
+            "description": "Current humidity.",
+            "format": "float",
+            "nullable": true
+          },
+          "dewPoint": {
+            "type": "number",
+            "description": "Current dew point.",
+            "format": "float",
+            "nullable": true
+          },
+          "pressure": {
+            "type": "number",
+            "description": "Current atmospheric pressure.",
+            "format": "float",
+            "nullable": true
+          },
+          "visibility": {
+            "type": "number",
+            "description": "Current visibility.",
+            "format": "float",
+            "nullable": true
+          },
+          "uv": {
+            "type": "number",
+            "description": "Numeric UV index.",
+            "format": "float",
+            "nullable": true
+          },
+          "airQuality": {
+            "$ref": "#/components/schemas/WeatherAirQuality"
+          },
+          "windSpeed": {
+            "type": "number",
+            "description": "Current wind speed.",
+            "format": "float",
+            "nullable": true
+          },
+          "windDirection": {
+            "type": "number",
+            "description": "Current wind direction.",
+            "format": "float",
+            "nullable": true
+          },
+          "windGust": {
+            "type": "number",
+            "description": "Current wind gust speed.",
+            "format": "float",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DailyWeatherForecast": {
+        "type": "object",
+        "properties": {
+          "validDate": {
+            "type": "string",
+            "description": "Forecast date.",
+            "nullable": true
+          },
+          "condition": {
+            "type": "string",
+            "description": "Forecast condition.",
+            "nullable": true
+          },
+          "uvLevel": {
+            "type": "string",
+            "description": "Textual UV level.",
+            "nullable": true
+          },
+          "temperatureHigh": {
+            "type": "number",
+            "description": "Forecast high temperature.",
+            "format": "float",
+            "nullable": true
+          },
+          "temperatureLow": {
+            "type": "number",
+            "description": "Forecast low temperature.",
+            "format": "float",
+            "nullable": true
+          },
+          "feelsLikeHigh": {
+            "type": "number",
+            "description": "Forecast high apparent temperature.",
+            "format": "float",
+            "nullable": true
+          },
+          "feelsLikeLow": {
+            "type": "number",
+            "description": "Forecast low apparent temperature.",
+            "format": "float",
+            "nullable": true
+          },
+          "precipitationChance": {
+            "type": "number",
+            "description": "Chance of precipitation.",
+            "format": "float",
+            "nullable": true
+          },
+          "rainAmount": {
+            "type": "number",
+            "description": "Forecast rain amount.",
+            "format": "float",
+            "nullable": true
+          },
+          "rainToMidnight": {
+            "type": "number",
+            "description": "Forecast rain through midnight.",
+            "format": "float",
+            "nullable": true
+          },
+          "snowAmount": {
+            "type": "number",
+            "description": "Forecast snow amount.",
+            "format": "float",
+            "nullable": true
+          },
+          "snowToMidnight": {
+            "type": "number",
+            "description": "Forecast snow through midnight.",
+            "format": "float",
+            "nullable": true
+          },
+          "uv": {
+            "type": "number",
+            "description": "Numeric UV index.",
+            "format": "float",
+            "nullable": true
+          },
+          "visibility": {
+            "type": "number",
+            "description": "Forecast visibility.",
+            "format": "float",
+            "nullable": true
+          },
+          "dewPoint": {
+            "type": "number",
+            "description": "Forecast dew point.",
+            "format": "float",
+            "nullable": true
+          },
+          "pressure": {
+            "type": "number",
+            "description": "Forecast atmospheric pressure.",
+            "format": "float",
+            "nullable": true
+          },
+          "humidity": {
+            "$ref": "#/components/schemas/WeatherHumidityRange"
+          },
+          "day": {
+            "$ref": "#/components/schemas/WeatherDayPartForecast"
+          },
+          "night": {
+            "$ref": "#/components/schemas/WeatherDayPartForecast"
+          },
+          "almanac": {
+            "$ref": "#/components/schemas/WeatherAlmanac"
+          },
+          "hourly": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HourlyWeatherForecast"
+            },
+            "description": "Hourly forecasts for the day.",
+            "nullable": true
+          },
+          "windMaxSpeed": {
+            "type": "number",
+            "description": "Maximum forecast wind speed.",
+            "format": "float",
+            "nullable": true
+          },
+          "windMaxDirection": {
+            "type": "number",
+            "description": "Direction of the maximum forecast wind.",
+            "format": "float",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "HistoricalWeather": {
+        "type": "object",
+        "properties": {
+          "monthlyAverageData": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MonthlyWeatherAverage"
+            },
+            "description": "Monthly weather averages.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "HourlyWeatherForecast": {
+        "type": "object",
+        "properties": {
+          "validAt": {
+            "type": "string",
+            "description": "Time the forecast is valid.",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Time the forecast was created.",
+            "nullable": true
+          },
+          "condition": {
+            "type": "string",
+            "description": "Forecast condition.",
+            "nullable": true
+          },
+          "summary": {
+            "type": "string",
+            "description": "Forecast summary.",
+            "nullable": true
+          },
+          "temperature": {
+            "type": "number",
+            "description": "Forecast temperature.",
+            "format": "float",
+            "nullable": true
+          },
+          "feelsLike": {
+            "type": "number",
+            "description": "Forecast apparent temperature.",
+            "format": "float",
+            "nullable": true
+          },
+          "universalThermalClimateIndex": {
+            "type": "number",
+            "description": "Universal Thermal Climate Index value.",
+            "format": "float",
+            "nullable": true
+          },
+          "humidity": {
+            "type": "number",
+            "description": "Forecast humidity.",
+            "format": "float",
+            "nullable": true
+          },
+          "dewPoint": {
+            "type": "number",
+            "description": "Forecast dew point.",
+            "format": "float",
+            "nullable": true
+          },
+          "pressure": {
+            "type": "number",
+            "description": "Forecast atmospheric pressure.",
+            "format": "float",
+            "nullable": true
+          },
+          "visibility": {
+            "type": "number",
+            "description": "Forecast visibility.",
+            "format": "float",
+            "nullable": true
+          },
+          "uv": {
+            "type": "number",
+            "description": "Numeric UV index.",
+            "format": "float",
+            "nullable": true
+          },
+          "precipitationChance": {
+            "type": "number",
+            "description": "Chance of precipitation.",
+            "format": "float",
+            "nullable": true
+          },
+          "rainAmount": {
+            "type": "number",
+            "description": "Forecast rain amount.",
+            "format": "float",
+            "nullable": true
+          },
+          "snowAmount": {
+            "type": "number",
+            "description": "Forecast snow amount.",
+            "format": "float",
+            "nullable": true
+          },
+          "rainAccumulation": {
+            "type": "number",
+            "description": "Forecast accumulated rain.",
+            "format": "float",
+            "nullable": true
+          },
+          "snowAccumulation": {
+            "type": "number",
+            "description": "Forecast accumulated snow.",
+            "format": "float",
+            "nullable": true
+          },
+          "windSpeed": {
+            "type": "number",
+            "description": "Forecast wind speed.",
+            "format": "float",
+            "nullable": true
+          },
+          "windDirection": {
+            "type": "number",
+            "description": "Forecast wind direction.",
+            "format": "float",
+            "nullable": true
+          },
+          "windGust": {
+            "type": "number",
+            "description": "Forecast wind gust speed.",
+            "format": "float",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ImageEvidence": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "media/image"
+            ],
+            "type": "string"
+          },
+          "content": {
+            "$ref": "#/components/schemas/ImageItem"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MonthlyWeatherAverage": {
+        "type": "object",
+        "properties": {
+          "creationTime": {
+            "type": "string",
+            "description": "Time the averages were created.",
+            "nullable": true
+          },
+          "validTime": {
+            "type": "string",
+            "description": "Time period for which the averages are valid.",
+            "nullable": true
+          },
+          "recordHighDate": {
+            "type": "string",
+            "description": "Date of the record high temperature.",
+            "nullable": true
+          },
+          "recordLowDate": {
+            "type": "string",
+            "description": "Date of the record low temperature.",
+            "nullable": true
+          },
+          "monthName": {
+            "type": "string",
+            "description": "Month name.",
+            "nullable": true
+          },
+          "avgTemperature": {
+            "type": "number",
+            "description": "Average temperature.",
+            "format": "float",
+            "nullable": true
+          },
+          "avgMaxTemperature": {
+            "type": "number",
+            "description": "Average maximum temperature.",
+            "format": "float",
+            "nullable": true
+          },
+          "avgMinTemperature": {
+            "type": "number",
+            "description": "Average minimum temperature.",
+            "format": "float",
+            "nullable": true
+          },
+          "recordHighTemperature": {
+            "type": "number",
+            "description": "Record high temperature.",
+            "format": "float",
+            "nullable": true
+          },
+          "recordLowTemperature": {
+            "type": "number",
+            "description": "Record low temperature.",
+            "format": "float",
+            "nullable": true
+          },
+          "avgPrecipitation": {
+            "type": "number",
+            "description": "Average precipitation.",
+            "format": "float",
+            "nullable": true
+          },
+          "avgPrecipitationDays": {
+            "type": "number",
+            "description": "Average precipitation days.",
+            "format": "float",
+            "nullable": true
+          },
+          "avgPrecipitationDaysMeasured": {
+            "type": "number",
+            "description": "Measured precipitation days.",
+            "format": "float",
+            "nullable": true
+          },
+          "avgSnowFall": {
+            "type": "number",
+            "description": "Average snowfall.",
+            "format": "float",
+            "nullable": true
+          },
+          "avgSnowFallDays": {
+            "type": "number",
+            "description": "Average snowfall days.",
+            "format": "float",
+            "nullable": true
+          },
+          "avgSnowFallDaysMeasured": {
+            "type": "number",
+            "description": "Measured snowfall days.",
+            "format": "float",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SearchAutoEvidenceResponse": {
+        "type": "object",
+        "properties": {
+          "traceId": {
+            "type": "string",
+            "description": "Trace ID for debugging and tracking.",
+            "nullable": true
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AutoEvidenceResult"
+            },
+            "description": "Evidence results with citations scoped to each result.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SearchAutoRequest": {
+        "required": [
+          "query"
+        ],
+        "type": "object",
+        "properties": {
+          "query": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "type": "string",
+            "description": "A search query string. Supports 'site:' and '-site:' operators; use these operators sparingly because scoping can reduce relevance."
+          },
+          "language": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string",
+            "description": "A two-letter ISO 639-1 interface language. Default is 'en'.",
+            "default": "en",
+            "nullable": true
+          },
+          "region": {
+            "type": "string",
+            "description": "A two-letter market or country/region code. Default is 'US'.",
+            "default": "US",
+            "nullable": true
+          },
+          "mode": {
+            "$ref": "#/components/schemas/SonicMode"
+          },
+          "maxResponseLength": {
+            "type": "integer",
+            "description": "Maximum total response length in characters. Default is 100000.",
+            "format": "int32",
+            "default": 100000
+          },
+          "includeDomains": {
+            "maxItems": 250,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Restricts eligible web and news results to the listed domains. Keep the list short for best relevance.",
+            "nullable": true
+          },
+          "excludeDomains": {
+            "maxItems": 250,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Omits results from the listed domains. Exclusions take precedence over inclusions when the same domain appears in both lists.",
+            "nullable": true
+          },
+          "location": {
+            "type": "string",
+            "description": "Location information in format 'lat:<float>;long:<float>'. If omitted, location information in the query is used.",
+            "nullable": true
+          },
+          "responseFilter": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of answer types eligible for inclusion in the response. Supported values: web, news, timezone, weather, images, videos.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SonicMode": {
+        "enum": [
+          "fast",
+          "advanced"
+        ],
+        "type": "string"
+      },
+      "TextEvidence": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "text"
+            ],
+            "type": "string"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated text evidence."
+          }
+        },
+        "additionalProperties": false
+      },
+      "TimeZoneEntry": {
+        "type": "object",
+        "properties": {
+          "timeZoneName": {
+            "type": "string",
+            "description": "Full name of the time zone.",
+            "nullable": true
+          },
+          "timeZoneAbbreviation": {
+            "type": "string",
+            "description": "Short abbreviation, e.g. KST, IST, PDT.",
+            "nullable": true
+          },
+          "location": {
+            "type": "string",
+            "description": "City/country/region for the time zone.",
+            "nullable": true
+          },
+          "utcOffset": {
+            "type": "number",
+            "description": "UTC offset in hours. Null when the source does not provide an offset.",
+            "format": "double",
+            "nullable": true
+          },
+          "utcTime": {
+            "type": "string",
+            "description": "UTC time as a formatted string.",
+            "nullable": true
+          },
+          "localTime": {
+            "type": "string",
+            "description": "Local time as a formatted string.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TimeZoneEvidence": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "structured/timeZone"
+            ],
+            "type": "string"
+          },
+          "content": {
+            "$ref": "#/components/schemas/TimeZoneItem"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TimeZoneItem": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Short human-readable summary of the answer. Empty for the date-only variant.",
+            "nullable": true
+          },
+          "timeZones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimeZoneEntry"
+            },
+            "description": "Time zone objects for single or multi-time-zone answers.",
+            "nullable": true
+          },
+          "startTimeZone": {
+            "$ref": "#/components/schemas/TimeZoneEntry"
+          },
+          "endTimeZone": {
+            "$ref": "#/components/schemas/TimeZoneEntry"
+          },
+          "timeDifference": {
+            "type": "string",
+            "description": "Human-readable time difference sentence for comparison answers.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "VideoEvidence": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "media/video"
+            ],
+            "type": "string"
+          },
+          "content": {
+            "$ref": "#/components/schemas/VideoItem"
+          }
+        },
+        "additionalProperties": false
+      },
+      "WeatherAirQuality": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "number",
+            "description": "Air quality index.",
+            "format": "float",
+            "nullable": true
+          },
+          "severity": {
+            "type": "string",
+            "description": "Air quality severity.",
+            "nullable": true
+          },
+          "primaryPollutant": {
+            "type": "string",
+            "description": "Primary measured pollutant.",
+            "nullable": true
+          },
+          "validAt": {
+            "type": "string",
+            "description": "Time the reading is valid.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "WeatherAlert": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Alert identifier.",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "Alert name.",
+            "nullable": true
+          },
+          "severity": {
+            "type": "string",
+            "description": "Alert severity.",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Alert status.",
+            "nullable": true
+          },
+          "issuingAuthority": {
+            "type": "string",
+            "description": "Authority that issued the alert.",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Alert description.",
+            "nullable": true
+          },
+          "safetyGuidance": {
+            "type": "string",
+            "description": "Recommended safety guidance.",
+            "nullable": true
+          },
+          "issuedAt": {
+            "type": "string",
+            "description": "Time the alert was issued.",
+            "nullable": true
+          },
+          "effectiveAt": {
+            "type": "string",
+            "description": "Time the alert becomes effective.",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "Time the alert expires.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "WeatherAlmanac": {
+        "type": "object",
+        "properties": {
+          "validDate": {
+            "type": "string",
+            "description": "Date for the almanac data.",
+            "nullable": true
+          },
+          "sunrise": {
+            "type": "string",
+            "description": "Sunrise time.",
+            "nullable": true
+          },
+          "sunset": {
+            "type": "string",
+            "description": "Sunset time.",
+            "nullable": true
+          },
+          "moonrise": {
+            "type": "string",
+            "description": "Moonrise time.",
+            "nullable": true
+          },
+          "moonset": {
+            "type": "string",
+            "description": "Moonset time.",
+            "nullable": true
+          },
+          "moonPhase": {
+            "type": "string",
+            "description": "Moon phase.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "WeatherDayPartForecast": {
+        "type": "object",
+        "properties": {
+          "condition": {
+            "type": "string",
+            "description": "Forecast condition.",
+            "nullable": true
+          },
+          "precipitationChance": {
+            "type": "number",
+            "description": "Chance of precipitation.",
+            "format": "float",
+            "nullable": true
+          },
+          "windSpeed": {
+            "type": "number",
+            "description": "Forecast wind speed.",
+            "format": "float",
+            "nullable": true
+          },
+          "windDirection": {
+            "type": "number",
+            "description": "Forecast wind direction.",
+            "format": "float",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "WeatherEvidence": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "structured/weather"
+            ],
+            "type": "string"
+          },
+          "content": {
+            "$ref": "#/components/schemas/WeatherItem"
+          }
+        },
+        "additionalProperties": false
+      },
+      "WeatherHumidityRange": {
+        "type": "object",
+        "properties": {
+          "high": {
+            "type": "number",
+            "description": "High humidity value.",
+            "format": "float",
+            "nullable": true
+          },
+          "low": {
+            "type": "number",
+            "description": "Low humidity value.",
+            "format": "float",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "WeatherItem": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "Human-readable name of the queried location.",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "Canonical MSN Weather attribution URL for the answer.",
+            "nullable": true
+          },
+          "units": {
+            "$ref": "#/components/schemas/WeatherUnits"
+          },
+          "alerts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WeatherAlert"
+            },
+            "description": "Active weather alerts. Empty when no alerts are available.",
+            "nullable": true
+          },
+          "currentWeather": {
+            "$ref": "#/components/schemas/CurrentWeather"
+          },
+          "forecastedWeather": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DailyWeatherForecast"
+            },
+            "description": "Daily forecasts for the configured forecast horizon.",
+            "nullable": true
+          },
+          "historicalWeather": {
+            "$ref": "#/components/schemas/HistoricalWeather"
+          },
+          "sunlight": {
+            "$ref": "#/components/schemas/WeatherAlmanac"
+          }
+        },
+        "additionalProperties": false
+      },
+      "WeatherUnits": {
+        "type": "object",
+        "properties": {
+          "system": {
+            "type": "string",
+            "description": "Measurement system.",
+            "nullable": true
+          },
+          "temperature": {
+            "type": "string",
+            "description": "Temperature unit.",
+            "nullable": true
+          },
+          "speed": {
+            "type": "string",
+            "description": "Speed unit.",
+            "nullable": true
+          },
+          "pressure": {
+            "type": "string",
+            "description": "Pressure unit.",
+            "nullable": true
+          },
+          "distance": {
+            "type": "string",
+            "description": "Distance unit.",
+            "nullable": true
+          },
+          "height": {
+            "type": "string",
+            "description": "Height unit.",
+            "nullable": true
+          },
+          "time": {
+            "type": "string",
+            "description": "Time format or unit.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "ApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-apikey",
+        "description": "Subscription key authentication. Pass your key in the `x-apikey` header."
+      },
+      "EntraID": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Entra ID (Azure AD) OAuth2 bearer token in the `Authorization` header."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Browse"
+    },
+    {
+      "name": "Search"
+    }
+  ],
+  "security": [
+    {
+      "EntraID": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.microsoft.ai/v3"
+    }
+  ]
+}

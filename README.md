@@ -1,23 +1,46 @@
-# Oracle EBS Warehouse Location Agents (Azure AI Foundry)
+# Strategic Warehouse Location Planner — Powered by AI
 
-Two Azure AI Foundry prompt agents that recommend warehouse locations from live Oracle E-Business Suite data
-running on Oracle Exadata Database Service @ Azure.
+Two Microsoft Foundry agents that recommend where to open a new warehouse, from live Oracle E-Business Suite
+shipment history on Oracle Exadata Database Service on Oracle Database@Azure. Built for the Oracle AI Database@Azure
+Partner Hackathon. The full write-up is [`submission/Strategic_Warehouse_Location_Planner.pdf`](submission/Strategic_Warehouse_Location_Planner.pdf).
+
+**The approach in one line:** the code does the maths, the AI does the judgement, and Oracle stays the system of record.
 
 | Agent | Role |
 |---|---|
-| `Hackathon-Oracle-Geo-Postal-code-generator` | Maintains the reference data: geocodes customer/organisation postal codes into `XXWLA_GEO_POSTAL_CACHE` (web search, US Census Gazetteer, Azure Maps or manual) and builds the candidate site list in `XXWLA_CANDIDATE_SITE`. |
+| `Hackathon-Oracle-Geo-Postal-code-generator` | Prepares the data: geocodes pending postal codes with Azure Maps into `XXWLA_GEO_POSTAL_CACHE` (Mode E, or manual entry in Mode M), reverse-geocodes coordinates (Mode R), builds the candidate site list in `XXWLA_CANDIDATE_SITE` (Modes B, BM, C) and reports data readiness (STATUS). |
 | `Hackathon-Oracle-Warehouse-Recommendation-Agent` | Ranks candidate sites against demand (`XXWLA_DEMAND_V`) with a deterministic scoring script, adds cited market research, checks site coordinates with Azure Maps and produces a downloadable report. |
 
 ## Architecture
+
+![Solution architecture](submission/architecture.png)
+
+Deployment view:
 
 ```
 Foundry agent ──mcp──────▶ MCP-relay-app (Azure Function, public, VNet-integrated)
    │                          └──▶ mcp-server-vm (private VNet): nginx ─▶ mcp-proxy ─▶ Oracle SQLcl `sql -mcp`
    │                                                                                     └──▶ Exadata @ Azure (EBS, schema MCP_VIEWS, read-only user)
    ├─openapi (managed identity)──▶ Azure Maps Geocoding API (keyless, Entra ID)
-   ├─code_interpreter──▶ attached scripts (scoring.py, build_report.py, gaz_load.py)
-   └─web_search
+   ├─code_interpreter──▶ attached scripts (scoring.py, build_report.py)
+   └─web_search            (Microsoft Web IQ prepared in tools/webiq/, not enabled: limited access)
 ```
+
+## Test evidence
+
+End-to-end run on 02 Oct 2026, Vision Operations, 01-FEB-2002 to 01-OCT-2010, region ALL
+([workbook](submission/evidence/Warehouse_Recommendation_Vision_Operations_20261002_1349.xlsx)):
+
+| Check | Result |
+|---|---|
+| Oracle control totals | 51 postal codes, 4,796,338 shipped units |
+| Geocoded units | 99.9% — ranking status FINAL, no overrides |
+| Candidates ranked by `scoring.py` | 100 (82 existing organisations in the overlap test) |
+| Recommendation | Columbus OH, computed rank 1, score 0.9894 |
+| Azure Maps location check | 3 of 3 shortlisted sites MATCH |
+| Market research | 12 findings on 3 sites: 11 cited, 1 ABSENT |
+
+Demo prompts: [`submission/demo-prompts.md`](submission/demo-prompts.md).
 
 ## Repository layout
 
@@ -29,9 +52,11 @@ Foundry agent ──mcp──────▶ MCP-relay-app (Azure Function, publ
 | `tools/openapi/azure_maps.json` | OpenAPI 3 spec for Azure Maps forward (`/geocode`) and reverse (`/reverseGeocode`) geocoding. |
 | `tools/ebs-vision-mcp-shim/` | Azure Function that relays MCP over SSE from Foundry to the private MCP backend. |
 | `tools/ebs-vision-mcp-backend/` | MCP backend config: systemd unit, startup primer, nginx front, `setup.sh` for a fresh Ubuntu 24.04 VM. |
-| `db/mcp_views_xxwla.sql` | DDL for the `XXWLA_*` tables and views the agents read and write. `db/export_ddl.sql` regenerates it. |
+| `db/mcp_views_xxwla.sql` | DDL for the `XXWLA_*` tables and views the agents read and write, with design comments and the grants for the MCP user. |
+| `tools/webiq/` | Microsoft Web IQ OpenAPI spec, prepared as a replacement for `web_search`; not enabled (see its README). |
 | `infra/setup.sh` | Keyless Azure Maps account and role assignment. |
 | `scripts/` | `export_agent.py`, `deploy_agent.py`, `check_secrets.sh`. |
+| `submission/` | Hackathon submission: form text (`SUBMISSION.md`), solution document (`.docx`/`.pdf`), architecture diagram, demo prompts, test evidence. |
 
 ## Setup
 
@@ -72,4 +97,6 @@ python scripts/deploy_agent.py warehouse-recommendation --dry-run   # expect: ID
 
 ## Data
 
-`agents/geo-postal-code/files/2025_Gaz_zcta_national Clean txt.txt` is derived from the US Census Bureau 2025 Gazetteer ZCTA file (public domain).
+`agents/geo-postal-code/files/2025_Gaz_zcta_national Clean txt.txt` is derived from the US Census Bureau 2025 Gazetteer ZCTA file (public domain). It and `gaz_load.py` are still attached to the Geo agent's Code Interpreter but are no longer used by its instructions, which take coordinates from Azure Maps only.
+
+The test evidence workbook uses Oracle's Vision demo data.
