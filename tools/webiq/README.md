@@ -2,12 +2,12 @@
 
 `webiq-openapi.json` is the public Web IQ OpenAPI spec (`https://webiq.microsoft.ai/documentation/openapi.json`) trimmed to `/search/web` and `/browse`, with `servers` set to `https://api.microsoft.ai/v3`.
 
-**Status: not enabled.** Web IQ is limited access. Tested 2026-10-02 from a Foundry agent with managed-identity auth: the token is accepted, but the call is rejected with
+**Status: not enabled.** Web IQ access requires tenant enrollment in the Microsoft Frontier Preview Program. Tested 2026-10-02 from a Foundry agent with managed-identity auth: the token is accepted, but the call is rejected with
 `AuthUnauthorizedEntryId: Application with entryId <foundry-account-identity-appId> is not authorized to access this service`.
 
 ## Option A — keyless (preferred)
 
-Ask the Web IQ team to authorise the Foundry **account** managed identity's application ID (the `appid` claim of its token; for this POV it is the ID in the error above). Then add this tool to the agent by creating a new version via the API (the portal only offers connection auth for OpenAPI tools):
+Enroll the tenant in the Frontier Preview Program so Web IQ accepts the Foundry **account** managed identity (the `appid` claim of its token is the entry ID in the error). Then add this tool to the agent by creating a new version via the API (the portal only offers connection auth for OpenAPI tools):
 
 ```json
 {

@@ -23,7 +23,7 @@ Foundry agent ──mcp──────▶ MCP-relay-app (Azure Function, publ
    │                                                                                     └──▶ Exadata @ Azure (EBS, schema MCP_VIEWS, read-only user)
    ├─openapi (managed identity)──▶ Azure Maps Geocoding API (keyless, Entra ID)
    ├─code_interpreter──▶ attached scripts (scoring.py, build_report.py)
-   └─web_search            (Microsoft Web IQ prepared in tools/webiq/, not enabled: limited access)
+   └─web_search            (Microsoft Web IQ prepared in tools/webiq/, not enabled: needs Frontier Preview Program enrollment)
 ```
 
 ## Test evidence

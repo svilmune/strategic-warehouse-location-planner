@@ -4,17 +4,17 @@ Form: https://github.com/Azure/odaa-ai-partnerHackathon/issues/new?template=subm
 Issue title: `[Submission]: Strategic Warehouse Location Planner — Powered by AI`. **Due 02 October 2026, 11:59 PM PST.**
 
 Each `###` section is one field of the form, in the form's order. Paste the text under it into that field.
-Search for `TODO` before submitting. The full write-up is `submission/Strategic_Warehouse_Location_Planner.pdf`.
+The full write-up is `submission/Strategic_Warehouse_Location_Planner.pdf`.
 
 ---
 
 ### Team Name
 
-Accenture   <!-- TODO: confirm the team name -->
+Accenture
 
 ### Team Members
 
-TODO: Name (@github-handle), Name (@github-handle), ...
+Simo Vilmunen (@svilmune), Mayuresh Kolhatkar, Marc Gero, Vikrant Deshmukh
 
 ### Project Title
 
@@ -22,11 +22,11 @@ Strategic Warehouse Location Planner — Powered by AI
 
 ### GitHub Repository Link
 
-TODO: https://github.com/<org>/<repo>   (must be public)
+https://github.com/svilmune/strategic-warehouse-location-planner
 
 ### Video Demo Link
 
-TODO: link (YouTube unlisted, Vimeo, etc.). Check it opens in a private/incognito window.
+https://youtu.be/9FL4lKdYcIM
 
 ### Business Problem & Target Users
 
@@ -43,7 +43,7 @@ Warehouse location is a capital decision, but it's usually made with partial inf
 **Measurable impact:**
 - **Measured:** in the test run on Vision Operations (2002–2010), 51 postal codes and 4.8M shipped units were read from Oracle. 99.9% of units were geocoded, 100 candidate sites were ranked, and 3 shortlisted sites got 12 research findings: 11 cited, and 1 marked ABSENT where no valid source existed. The result is a committee-ready workbook from one conversation.
 - **Expected, not yet measured against a baseline:** first answer in a working session instead of a multi-week spreadsheet exercise, and repeatable rankings. For scale, the team's manual research put the annual occupancy-cost gap between candidate US markets at about $412,500 for a 100,000 sq ft building.
-- TODO: studies per year and analyst hours per study from a business sponsor.
+- Not yet measured against a baseline: the agent has not yet supported a live business decision.
 
 ### Architecture & Approach
 
@@ -75,7 +75,7 @@ Warehouse location is a capital decision, but it's usually made with partial inf
 10. The planner reviews the workbook and decides.
 
 **Microsoft IQ.** We'd rather be straight about which IQ components this build uses than draw them all into a diagram:
-- **Web IQ:** we intended it for Tier 2 market research in place of the generic web search tool. We configured it as an OpenAPI tool with the Foundry account's managed identity. Web IQ accepted the token but rejected the identity ("Application … is not authorized to access this service"), because Web IQ is limited access and our tenant isn't enrolled. So we kept Foundry web search. The tool definition is ready in the repo (`tools/webiq/`).
+- **Web IQ:** we intended it for Tier 2 market research in place of the generic web search tool. We configured it as an OpenAPI tool with the Foundry account's managed identity. Web IQ accepted the token but rejected the identity ("Application … is not authorized to access this service"), because Web IQ access requires tenant enrollment in the Microsoft Frontier Preview Program, and our tenant isn't enrolled. So we kept Foundry web search. The tool definition is ready in the repo (`tools/webiq/`).
 - **Fabric IQ:** not used in this build. Our companion Order-to-Ship Recovery Agent uses Fabric with mirrored EBS data. Here the next step is to mirror the demand view into Fabric for larger volumes.
 - **Foundry IQ:** not used in this build. Next step: a knowledge base of approved market reports alongside web research.
 - **Work IQ:** not used in this build. Next step: planner context from email and Teams, such as sites the business has already ruled out.
@@ -114,7 +114,7 @@ The repository README has full setup and run instructions; the solution document
 - **No CI/CD pipeline.**
 - **Simplified distances:** great-circle distance times a road factor, not routed drive time. Next step: Azure Maps routing.
 
-**Microsoft Marketplace plans and intended offer type:** a Marketplace offer isn't part of this submission. TODO: confirm whether publication is planned and the offer type, or state "undecided".
+**Microsoft Marketplace plans and intended offer type:** a Marketplace offer isn't part of this submission. Not planned at this stage; no offer type has been chosen.
 
 **Marketplace readiness gaps and next steps:**
 - A one-step installer (Bicep or azd) for the schema objects, grants and agents.
@@ -129,7 +129,6 @@ The repository README has full setup and run instructions; the solution document
 - **Trust-but-verify pipeline:** control totals from SQL, an integrity check in the scorer, and a report builder that refuses bad research. The model is never the last line of defence.
 - **Proposed new Oracle–Microsoft connection:** a private Oracle MCP on Oracle Database@Azure, reached from Foundry through a VNet-integrated relay. Keyless Azure Maps from Foundry agents via managed identity. The Oracle geocode cache becomes a shared reference asset for other agents.
 - **Web IQ:** prepared for cited research, and blocked only by access.
-- TODO: Review of existing AI Blueprints (starred, discussion link), if done.
 
 ### Submission Checklist
 
