@@ -1,0 +1,21 @@
+[Unit]
+Description=Oracle SQLcl MCP Server (stdio bridged to SSE via mcp-proxy)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=oracle
+Group=oracle
+WorkingDirectory=/mcp
+Environment="JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64"
+Environment="PATH=/mcp/sqlcl/bin:/mcp/venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="TNS_ADMIN=/mcp/wallet"
+ExecStart=/mcp/venv/bin/mcp-proxy --host 127.0.0.1 --port 8081 -- /mcp/sqlcl/bin/sql -mcp
+Restart=always
+RestartSec=5
+StandardOutput=append:/mcp/logs/mcp.log
+StandardError=append:/mcp/logs/mcp.err
+
+[Install]
+WantedBy=multi-user.target

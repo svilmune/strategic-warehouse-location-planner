@@ -1,0 +1,5 @@
+azure-functions
+azurefunctions-extensions-http-fastapi
+httpx
+azure-identity
+azure-ai-agents

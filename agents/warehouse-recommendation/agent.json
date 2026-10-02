@@ -1,0 +1,56 @@
+{
+  "name": "Hackathon-Oracle-Warehouse-Recommendation-Agent",
+  "exported_from_version": "23",
+  "description": "",
+  "metadata": {
+    "logo": "Avatar_Default.svg",
+    "description": "",
+    "microsoft.voice-live.enabled": "false",
+    "microsoft.voice-live.configuration": "{\"session\":{\"voice\":{\"name\":\"en-US-Ava:DragonHDLatestNeural\",\"type\":\"azure-standard\",\"temperature\":0.8,\"rate\":\"1\",\"isHdVoice\":true},\"inputAudioTranscription\":{\"model\":\"azure-speech\",\"language\":\"auto-detect\"},\"turnDetection\":{\"type\":\"azure_semantic_vad\",\"endOfUtteranceDetection\":null,\"removeFillerWords\":true},\"inputAudioNoiseReduction\":null,\"inputAudioEchoCancellation\":null,\"fillerResponse\":null,\"avatar\":null,\"proactiveEngagement\":false}}"
+  },
+  "definition": {
+    "kind": "prompt",
+    "model": "claude-opus-4-8",
+    "instructions": {
+      "$file": "instructions.md"
+    },
+    "tools": [
+      {
+        "type": "web_search"
+      },
+      {
+        "type": "mcp",
+        "server_label": "ebs-vision-mcp",
+        "server_url": "https://${MCP_SHIM_HOST}/sse",
+        "require_approval": "never",
+        "project_connection_id": "ebs-vision-mcp"
+      },
+      {
+        "type": "openapi",
+        "openapi": {
+          "name": "azure_maps",
+          "description": "Azure Maps forward and reverse geocoding (keyless, Entra managed identity).",
+          "spec": {
+            "$file": "../../tools/openapi/azure_maps.json"
+          },
+          "auth": {
+            "type": "managed_identity",
+            "security_scheme": {
+              "audience": "https://atlas.microsoft.com/"
+            }
+          }
+        }
+      },
+      {
+        "type": "code_interpreter",
+        "container": {
+          "type": "auto",
+          "files": [
+            "files/scoring.py",
+            "files/build_report.py"
+          ]
+        }
+      }
+    ]
+  }
+}

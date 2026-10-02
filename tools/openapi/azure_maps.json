@@ -1,0 +1,260 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Azure Maps Geocoding",
+    "version": "2025-01-01",
+    "description": "Forward geocoding (postal code / address to coordinates) and reverse geocoding (coordinates to address) with Azure Maps. Responses are GeoJSON; coordinates are always [longitude, latitude]."
+  },
+  "servers": [
+    {
+      "url": "https://atlas.microsoft.com"
+    }
+  ],
+  "components": {
+    "parameters": {
+      "apiVersion": {
+        "name": "api-version",
+        "in": "query",
+        "required": true,
+        "description": "Always 2025-01-01.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "2025-01-01"
+          ],
+          "default": "2025-01-01"
+        }
+      },
+      "clientId": {
+        "name": "x-ms-client-id",
+        "in": "header",
+        "required": true,
+        "description": "Azure Maps account client ID. Always send exactly ${AZURE_MAPS_CLIENT_ID}.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "${AZURE_MAPS_CLIENT_ID}"
+          ],
+          "default": "${AZURE_MAPS_CLIENT_ID}"
+        }
+      }
+    },
+    "schemas": {
+      "FeatureCollection": {
+        "type": "object",
+        "properties": {
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "geometry": {
+                  "type": "object",
+                  "properties": {
+                    "coordinates": {
+                      "type": "array",
+                      "description": "[longitude, latitude] - longitude first.",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "string",
+                      "enum": [
+                        "High",
+                        "Medium",
+                        "Low"
+                      ]
+                    },
+                    "matchCodes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "address": {
+                      "type": "object",
+                      "properties": {
+                        "addressLine": {
+                          "type": "string"
+                        },
+                        "postalCode": {
+                          "type": "string"
+                        },
+                        "locality": {
+                          "type": "string"
+                        },
+                        "adminDistricts": {
+                          "type": "array",
+                          "description": "First entry is the state/province.",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "shortName": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "countryRegion": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "ISO": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "formattedAddress": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/geocode": {
+      "get": {
+        "operationId": "geocode",
+        "summary": "Forward geocode a postal code or address to coordinates",
+        "description": "Provide postalCode + countryRegion for postal code lookups, or query for a free-form address. Read features[0].geometry.coordinates ([longitude, latitude]) and features[0].properties.confidence. An empty features array means no match.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiVersion"
+          },
+          {
+            "$ref": "#/components/parameters/clientId"
+          },
+          {
+            "name": "postalCode",
+            "in": "query",
+            "required": false,
+            "description": "Postal code, e.g. 60604 or SW1A 2JR. For a US ZIP+4 send only the first five digits.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "countryRegion",
+            "in": "query",
+            "required": false,
+            "description": "ISO 3166-1 alpha-2 country code, e.g. US, GB, CA.",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "description": "Free-form address, used instead of the structured fields, e.g. \"300 S Federal St, Chicago, IL\".",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locality",
+            "in": "query",
+            "required": false,
+            "description": "City or town.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "adminDistrict",
+            "in": "query",
+            "required": false,
+            "description": "State or province, e.g. IL.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "top",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of results (1-20).",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Geocode results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeatureCollection"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reverseGeocode": {
+      "get": {
+        "operationId": "reverse_geocode",
+        "summary": "Reverse geocode coordinates to an address",
+        "description": "Returns the address nearest the coordinate. Read features[0].properties.address (postalCode, locality, adminDistricts[0], countryRegion). An empty features array, or an address with no postalCode and no countryRegion, means no address exists there (e.g. open water).",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiVersion"
+          },
+          {
+            "$ref": "#/components/parameters/clientId"
+          },
+          {
+            "name": "coordinates",
+            "in": "query",
+            "required": true,
+            "description": "\"longitude,latitude\" in decimal degrees - LONGITUDE FIRST. Example for Chicago: \"-87.6298,41.8781\".",
+            "schema": {
+              "type": "string",
+              "pattern": "^-?\\d+(\\.\\d+)?,-?\\d+(\\.\\d+)?$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reverse geocode result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeatureCollection"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

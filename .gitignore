@@ -1,0 +1,6 @@
+.env
+*.zip
+kudu-state.json
+__pycache__/
+.venv/
+.DS_Store
